@@ -12,3 +12,7 @@ package-lock.json
 # frontend generated dts files (auto-import/components)
 /frontend/components.d.ts
 /frontend/src/auto-imports.d.ts
+
+# build/package outputs
+/out/
+/public/dist/

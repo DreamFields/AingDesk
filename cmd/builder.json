@@ -45,7 +45,6 @@
       {
         "target": "nsis"
       }
-    ],
-    "certificateSubjectName":""
+    ]
   }
 }
