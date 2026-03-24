@@ -3,3 +3,12 @@ lang.py
 yarn.lock
 node_modules
 package-lock.json
+
+# runtime/dev generated files
+/data/
+/logs/
+/public/electron/
+
+# frontend generated dts files (auto-import/components)
+/frontend/components.d.ts
+/frontend/src/auto-imports.d.ts

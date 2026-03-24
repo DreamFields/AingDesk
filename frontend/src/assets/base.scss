@@ -22,6 +22,8 @@
     --bt-text-color: #333;
     // 文字尺寸
     --bt-fz: 14px;
+    --bt-fz-small: 12px;
+    --bt-fz-large: 16px;
     // 主要文字颜色
     --bt-text-color-primary: #000;
     // 次要标题文字颜色
@@ -53,6 +55,12 @@ p {
     margin: 0;
     padding: 0;
     list-style: none;
+}
+
+html,
+body,
+#app {
+    font-size: var(--bt-fz);
 }
 
 /**

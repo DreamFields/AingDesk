@@ -1,5 +1,6 @@
 import { eventBUS } from "@/views/Home/utils/tools";
 import storage from "@/utils/storage";
+
 export function themeChange(theme:string) {
     if (theme === 'dark') {
         document.documentElement.style.setProperty('--bt-tit-color-secondary', '#ffffff'); 
@@ -14,6 +15,20 @@ export function themeChange(theme:string) {
       }
 }
 
+export function fontScaleChange(scale: number) {
+  const safeScale = Math.min(130, Math.max(85, Number(scale) || 100));
+  const baseFontSize = 14;
+  const scaled = (baseFontSize * safeScale) / 100;
+
+  document.documentElement.style.setProperty('--bt-fz', `${Math.round(scaled)}px`);
+  document.documentElement.style.setProperty('--bt-fz-small', `${Math.max(11, Math.round(scaled - 2))}px`);
+  document.documentElement.style.setProperty('--bt-fz-large', `${Math.round(scaled + 2)}px`);
+}
+
 themeChange(storage.themeMode)
+fontScaleChange(storage.fontScale)
+
 eventBUS.$on("themeChange",themeChange)
+eventBUS.$on("fontScaleChange",fontScaleChange)
+
 

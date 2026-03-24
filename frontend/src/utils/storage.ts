@@ -45,5 +45,18 @@ export default {
 
     set searchEngine(engine: string) {
         localStorage.setItem("searchEngine", engine)
+    },
+
+    // 界面字体缩放比例（百分比）
+    get fontScale(): number {
+        const scale = Number(localStorage.getItem("fontScale"))
+        if (Number.isNaN(scale) || scale <= 0) {
+            return 100
+        }
+        return scale
+    },
+
+    set fontScale(scale: number) {
+        localStorage.setItem("fontScale", String(scale))
     }
 }

@@ -17,13 +17,13 @@ import { NConfigProvider, darkTheme, lightTheme } from 'naive-ui';
 import { ragStatus, } from '@/views/KnowleadgeStore/controller/index';
 import { getVersion } from "@/views/Home/controller"
 import storage from './utils/storage';
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { getSoftSettingsStoreData } from './views/SoftSettings/store';
 import { getKnowledgeStoreData } from './views/KnowleadgeStore/store';
 import { getChatContentStoreData } from './views/ChatContent/store';
 
 
-const { themeMode, targetNet } = getSoftSettingsStoreData()
+const { themeMode, targetNet, fontScale } = getSoftSettingsStoreData()
 const { knowledgeDragable, } = getKnowledgeStoreData()
 const { welcomeShow, } = getIndexStore()
 const { guideActive, } = getChatContentStoreData()
@@ -38,12 +38,26 @@ ragStatus()
 getVersion()
 
 // 调整样式
-const themeOverrides = {
-  Switch: {
-    // railWidthMedium: "20px",
-    // railWidthSmall:"20px"
+const themeOverrides = computed(() => {
+  const scale = Math.min(130, Math.max(85, Number(fontScale.value) || 100));
+  const base = 14;
+  const medium = `${Math.round((base * scale) / 100)}px`;
+  const small = `${Math.max(11, Math.round((12 * scale) / 100))}px`;
+  const large = `${Math.round((16 * scale) / 100)}px`;
+  return {
+    common: {
+      fontSize: medium,
+      fontSizeSmall: small,
+      fontSizeMedium: medium,
+      fontSizeLarge: large,
+      fontSizeHuge: `${Math.round((18 * scale) / 100)}px`
+    },
+    Switch: {
+      // railWidthMedium: "20px",
+      // railWidthSmall:"20px"
+    }
   }
-}
+})
 
 // 判断是否出现欢迎界面
 onMounted(() => {

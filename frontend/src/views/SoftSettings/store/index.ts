@@ -35,6 +35,8 @@ const useSoftSettingsStore = defineStore("softSettings", () => {
 	const targetNet = ref('baidu');
 	// 版本号
 	const version = ref('1.0.0');
+	// 界面字体缩放比例（百分比）
+	const fontScale = ref(storage.fontScale || 100);
 	// 修改数据存储位置的提示弹窗
 	const changeDataPathShow = ref(false);
 	// 获取用户数据存储位置
@@ -108,6 +110,7 @@ const useSoftSettingsStore = defineStore("softSettings", () => {
 		languageOptions,
 		targetNet,
 		version,
+		fontScale,
 		userDataPath,
 		dataPathChangeCheckShow,
 		dataPathChangeStatusValues,

@@ -33,6 +33,19 @@
                 </div>
             </n-list-item>
             <n-list-item>
+                <div class="font-scale-setting w-100%">
+                    <div class="flex-between">
+                        <span>{{ $t("界面字体大小") }} ({{ fontScale }}%)</span>
+                        <div class="font-scale-action">
+                            <n-button size="tiny" @click="changeFontScale(Math.max(85, fontScale - 5))">A-</n-button>
+                            <n-slider :min="85" :max="130" :step="1" :value="fontScale"
+                                @update:value="changeFontScale" style="width: 180px; margin: 0 8px;" />
+                            <n-button size="tiny" @click="changeFontScale(Math.min(130, fontScale + 5))">A+</n-button>
+                        </div>
+                    </div>
+                </div>
+            </n-list-item>
+            <n-list-item>
                 <div class="language-setting w-100% flex-between">
                     <span>{{ $t("语言选择") }} </span>
                     <n-select :options="languageOptions" v-model:value="currentLanguage"
@@ -101,7 +114,8 @@ import {
     guideChange,
     setSearch,
     changeThemeMode,
-    changeLanguage
+    changeLanguage,
+    changeFontScale
 } from "@/views/SoftSettings/controller"
 import i18n from "@/lang";
 import wechat from "@/assets/images/wechat.png"
@@ -112,6 +126,7 @@ const {
     currentLanguage,
     targetNet,
     version,
+    fontScale,
     userDataPath,
 } = getSoftSettingsStoreData()
 const {
@@ -135,5 +150,10 @@ getDataSavePath()
 
 
     .theme-setting {}
+
+    .font-scale-action {
+        display: flex;
+        align-items: center;
+    }
 }
 </style>

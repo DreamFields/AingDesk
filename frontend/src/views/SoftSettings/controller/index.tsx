@@ -161,6 +161,16 @@ export function setSearch(val: string) {
 }
 
 /**
+ * @description 设置字体缩放比例
+ */
+export function changeFontScale(val: number) {
+	const { fontScale } = getSoftSettingsStoreData();
+	fontScale.value = val;
+	Storage.fontScale = val;
+	eventBUS.$emit('fontScaleChange', val);
+}
+
+/**
  * @description 切换主题
  */
 export function changeThemeMode(val: string) {
