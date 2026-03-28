@@ -7,11 +7,14 @@
 					@click="changeSettingTab('general')">{{ $t('常规设置') }}</div>
 				<div class="tabs-item" :class="{ active: currentSettingTab == 'mcp' }" @click="changeSettingTab('mcp')">
 					{{ $t('MCP服务器') }}</div>
+				<div class="tabs-item" :class="{ active: currentSettingTab == 'aurod' }" @click="changeSettingTab('aurod')">
+					{{ $t('Aurod AI') }}</div>
 			</div>
 			<div class="tabs-panels" :style="{ width: settingPanelWidth + 'px', borderLeft: settingPanelBorder }"
 				style="overflow:hidden">
 				<GeneralSettings v-if="currentSettingTab == 'general'" />
 				<McpServer v-if="currentSettingTab == 'mcp'" />
+				<AurodSettings v-if="currentSettingTab == 'aurod'" />
 			</div>
 		</div>
 	</n-modal>
@@ -29,6 +32,7 @@ import { getGlobalStore } from '@/stores/global';
 import { getSoftSettingsStoreData } from './store';
 import GeneralSettings from './components/GeneralSettings.vue';
 import McpServer from './components/McpServer.vue';
+import AurodSettings from './components/AurodSettings.vue';
 import { changeSettingTab, closeSoftSettings } from './controller';
 import i18n from '@/lang';
 const { currentSettingTab, settingPanelWidth, softSettingsShow } = getSoftSettingsStoreData();

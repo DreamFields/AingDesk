@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import path from 'path';
 import { pub } from '../class/public';
+import { AurodProvider } from './aurod_provider';
 
 // 定义模型信息类型
 type ModelInfo = {
@@ -36,12 +37,18 @@ export class ModelService {
     private apiConfig: ApiConfig = {} as ApiConfig;
     private models: any[] = [];
     private supplierName: string;
+    private aurodProvider: AurodProvider | null = null;
 
     constructor(supplierName: string) {
         this.supplierName = supplierName;
         if(this.supplierName === 'ollama') {
             this.baseUrl = `${pub.get_ollama_host()}/v1`;
             this.apiKey = supplierName;
+        }else if(this.supplierName === 'aurod') {
+            this.readApiConfig();
+            if(this.apiConfig.apiKey) {
+                this.aurodProvider = new AurodProvider(this.apiConfig.apiKey);
+            }
         }else{
             this.readApiConfig();
         }
@@ -56,6 +63,15 @@ export class ModelService {
 
     // 流式对话
     public async chat(options: any): Promise<any> {
+        // Aurod 供应商特殊处理
+        if (this.supplierName === 'aurod') {
+            if (!this.aurodProvider) {
+                this.error = "Aurod 未初始化，请先登录";
+                throw new Error('Aurod provider not initialized');
+            }
+            return this.aurodProvider.chat(options.messages, options.model);
+        }
+        
         if (!this.connect()) {
             throw new Error('Failed to connect to the API');
         }
@@ -226,6 +242,22 @@ export class ModelService {
 
     // 连接 API
     public connect(): boolean {
+        // Aurod 供应商使用自定义连接方式
+        if (this.supplierName === 'aurod') {
+            if (this.aurodProvider) {
+                return true;
+            }
+            if (!this.apiKey) {
+                this.readApiConfig();
+            }
+            if (!this.apiKey) {
+                this.error = "Aurod API Token 未配置，请先登录";
+                return false;
+            }
+            this.aurodProvider = new AurodProvider(this.apiKey);
+            return true;
+        }
+        
         if (this.client) {
             return true;
         }
@@ -250,6 +282,20 @@ export class ModelService {
 
     // 测试 API 接口是否可用
     public async testApi(): Promise<boolean> {
+        // Aurod 供应商特殊处理
+        if (this.supplierName === 'aurod') {
+            if (!this.aurodProvider) {
+                return false;
+            }
+            try {
+                await this.aurodProvider.getModels();
+                return true;
+            } catch (error) {
+                this.error = error;
+                return false;
+            }
+        }
+        
         if (!this.connect()) {
             return false;
         }
@@ -260,6 +306,11 @@ export class ModelService {
             this.error = error;
             return false;
         }
+    }
+    
+    // 获取 AurodProvider 实例（仅用于 Aurod 供应商）
+    public getAurodProvider(): AurodProvider | null {
+        return this.aurodProvider;
     }
 }
 

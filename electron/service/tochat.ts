@@ -532,7 +532,7 @@ export class ToChatService {
             
             if (!isOllama) resTimeMs = new Date().getTime();
             if(chunk.choices && chunk.choices.length === 0){
-                return;
+                return true; // 继续接收数据
             }
             if ((isOllama && chunk.done) ||
                 (!isOllama && (chunk.choices[0].finish_reason === 'stop' || chunk.choices[0].finish_reason === 'normal'))) {
@@ -632,8 +632,28 @@ export class ToChatService {
                 }
             }
             (async () => {
-                for await (const chunk of res) {
-                    await ResEvent(chunk);
+                let hasEnded = false;
+                let chunkCount = 0;
+                try {
+                    for await (const chunk of res) {
+                        chunkCount++;
+                        logger.info(`[Aurod] Received chunk ${chunkCount}:`, JSON.stringify(chunk).substring(0, 200));
+                        const continueStream = await ResEvent(chunk);
+                        if (!continueStream) {
+                            hasEnded = true;
+                            logger.info('[Aurod] Stream ended by ResEvent');
+                            break;
+                        }
+                    }
+                    logger.info(`[Aurod] Stream loop ended, total chunks: ${chunkCount}, hasEnded: ${hasEnded}`);
+                } catch (streamError: any) {
+                    logger.error('[Aurod] Stream error:', streamError.message);
+                    s.push(`\n\n---\n**流错误:** ${streamError.message}`);
+                }
+                // 如果流没有通过 ResEvent 结束，则手动结束
+                if (!hasEnded) {
+                    logger.info('[Aurod] Manually ending stream');
+                    s.push(null);
                 }
             })();
         }
