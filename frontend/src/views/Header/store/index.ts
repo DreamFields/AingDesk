@@ -70,6 +70,10 @@ const useHeaderStore = defineStore("headerStore", () => {
 
   // 多模型的对象列表
   const multipleModelList = ref<MultipleModelListDto[]>([])
+  // Aurod 积分
+  const aurodCredits = ref<number | null>(null)
+  // Aurod 积分详情
+  const aurodCreditPlans = ref<any[]>([])
   return {
     modelList,
     currentModelDto,
@@ -95,7 +99,9 @@ const useHeaderStore = defineStore("headerStore", () => {
     showModel,
     showModelList,
     modelListShow,
-    multipleModelList
+    multipleModelList,
+    aurodCredits,
+    aurodCreditPlans
   }
 })
 

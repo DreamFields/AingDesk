@@ -14,10 +14,15 @@
                     <div class="item-label">
                         <span>{{ item.title }}</span>
                         <n-tag v-for="cap in item.capability.filter((i: string) => ['vision', 'tools'].includes(i))"
-                            :key="cap" type="info" ghost>{{ cap }}</n-tag>
+                            :key="cap" type="info" ghost size="small">{{ cap }}</n-tag>
                     </div>
-                    <i class="i-tdesign:check-circle w-16 h-16 text-[var(--bt-theme-color)]"
-                        v-if="item.title == showModel_test"></i>
+                    <div class="flex items-center gap-2">
+                        <n-tag v-if="item.supplierName === 'aurod'" type="info" size="small">
+                            {{ formatModelCost(item.model) }}
+                        </n-tag>
+                        <i class="i-tdesign:check-circle w-16 h-16 text-[var(--bt-theme-color)]"
+                            v-if="item.title == showModel_test"></i>
+                    </div>
                 </div>
             </div>
         </template>
@@ -35,10 +40,15 @@
                 <div class="item-label">
                     <span>{{ item.title }}</span>
                     <n-tag v-for="cap in item.capability.filter((i: string) => ['vision', 'tools'].includes(i))"
-                        :key="cap" type="info" ghost>{{ cap }}</n-tag>
+                        :key="cap" type="info" ghost size="small">{{ cap }}</n-tag>
                 </div>
-                <i class="i-tdesign:check-circle w-16 h-16 text-[var(--bt-theme-color)]"
-                    v-if="item.title == showModel_test"></i>
+                <div class="flex items-center gap-2">
+                    <n-tag v-if="item.supplierName === 'aurod'" type="info" size="small">
+                        {{ formatModelCost(item.model) }}
+                    </n-tag>
+                    <i class="i-tdesign:check-circle w-16 h-16 text-[var(--bt-theme-color)]"
+                        v-if="item.title == showModel_test"></i>
+                </div>
             </div>
         </div>
         </n-scrollbar>
@@ -56,6 +66,31 @@ const { modelListSource,  } = getHeaderStoreData()
 
 // 定义选择事件
 const emits = defineEmits(['chooseModel'])
+
+// 模型积分消耗配置
+const MODEL_COST_CONFIG: Record<string, number> = {
+    'claude-sonnet-4-6-thinking': 100000,
+    'claude-sonnet-4-6': 100000,
+    'claude-opus-4-6': 1000000,
+    'gemini-3.1-pro-preview': 100000,
+    'gemini-3.1-pro-preview-thinking': 100000,
+}
+
+/**
+ * @description 格式化模型积分消耗
+ */
+function formatModelCost(model: string): string {
+    const cost = MODEL_COST_CONFIG[model] || 1
+    if (cost >= 10000) {
+        const wan = Math.floor(cost / 10000)
+        const remainder = cost % 10000
+        if (remainder > 0) {
+            return `${wan}万${remainder}积分/次`
+        }
+        return `${wan}万积分/次`
+    }
+    return `${cost}积分/次`
+}
 
 // 展示模型列表
 const showModel_test = ref(false)

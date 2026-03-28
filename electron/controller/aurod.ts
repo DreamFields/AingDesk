@@ -162,6 +162,34 @@ class AurodController {
             return { success: false, error: error.message };
         }
     }
+
+    /**
+     * 获取用户积分
+     */
+    public async get_credits() {
+        try {
+            const configPath = path.join(pub.get_data_path(), "models", "aurod", "config.json");
+            if (!pub.file_exists(configPath)) {
+                return { success: false, error: "未找到配置文件，请先登录" };
+            }
+            
+            const config = pub.read_json(configPath);
+            if (!config.apiKey) {
+                return { success: false, error: "API Token 未配置" };
+            }
+            
+            const provider = new AurodProvider(config.apiKey);
+            const plan = await provider.getUserPlan();
+            
+            return { 
+                success: true, 
+                credits: plan.totalUsable,
+                plans: plan.plans
+            };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    }
 }
 
 export default new AurodController();

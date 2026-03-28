@@ -44,7 +44,7 @@ instance.interceptors.response.use(
 export async function post<T>(
   url: string,
   params?: T
-): Promise<{ message: any; status: number; code: number; msg?: string; error_msg?: string }> {
+): Promise<{ message: any; status: number; code: number; msg?: string; error_msg?: string; success?: boolean; credits?: number; plans?: any[]; models?: any[]; error?: string }> {
   return instance.post(url, params)
 }
 

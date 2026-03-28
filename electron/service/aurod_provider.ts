@@ -156,6 +156,49 @@ export class AurodProvider {
     }
 
     /**
+     * 获取用户积分计划
+     */
+    public async getUserPlan(): Promise<{ totalUsable: number; plans: any[] }> {
+        try {
+            const response = await this.client.get("/api/user_plan", {
+                params: { page: 1 }
+            });
+            
+            const data: AurodResponse = response.data;
+            
+            if (data.code !== 0) {
+                throw new Error(data.msg || "获取积分信息失败");
+            }
+            
+            const records = data.data.records || [];
+            // 过滤未过期的计划，计算总可用积分
+            let totalUsable = 0;
+            const activePlans = records.filter((plan: any) => !plan.isExpire);
+            
+            for (const plan of activePlans) {
+                totalUsable += plan.usable || 0;
+            }
+            
+            logger.info(`[Aurod] User plan: ${activePlans.length} active plans, total usable: ${totalUsable}`);
+            
+            return {
+                totalUsable,
+                plans: activePlans.map((plan: any) => ({
+                    name: plan.name,
+                    usable: plan.usable,
+                    total: plan.total,
+                    use: plan.use,
+                    expire: plan.expire,
+                    eachDay: plan.eachDay
+                }))
+            };
+        } catch (error: any) {
+            logger.error("Aurod get user plan error:", error.message);
+            throw error;
+        }
+    }
+
+    /**
      * 获取会话列表
      */
     public async getSessionList(page: number = 1, size: number = 30): Promise<AurodSession[]> {

@@ -257,7 +257,7 @@ const fetchModels = async () => {
     
     if (result.success) {
       models.value = result.models || [];
-      statusMsg.value = `成功获取 ${result.models.length} 个模型`;
+      statusMsg.value = `成功获取 ${result.models?.length || 0} 个模型`;
       statusType.value = 'success';
       message.success('模型列表已更新');
     } else {

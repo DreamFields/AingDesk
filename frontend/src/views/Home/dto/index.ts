@@ -31,6 +31,7 @@ export type MultipeQuestionDto = {
 // 回答信息stat内容实体
 export type Stat = {
     model?: string,
+    supplierName?: string,
     created_at?: string,
     total_duration?: string,
     load_duration?: string,
