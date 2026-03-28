@@ -127,8 +127,37 @@ export class ModelService {
         }
     }
 
+    // Aurod 默认模型列表
+    private static readonly AUROD_DEFAULT_MODELS = [
+        { modelName: "gpt-5.4-nano", title: "GPT-5.4 Nano" },
+        { modelName: "gpt-5.4-nano-2026-03-17", title: "GPT-5.4 Nano (2026-03-17)" },
+        { modelName: "claude-sonnet-4-6", title: "Claude Sonnet 4.6" },
+        { modelName: "claude-sonnet-4-6-thinking", title: "Claude Sonnet 4.6 (Thinking)" },
+        { modelName: "claude-opus-4-6", title: "Claude Opus 4.6" },
+        { modelName: "gemini-3-flash-preview-thinking", title: "Gemini 3 Flash Preview (Thinking)" },
+        { modelName: "gemini-3.1-pro-preview", title: "Gemini 3.1 Pro Preview" },
+        { modelName: "gemini-3.1-pro-preview-thinking", title: "Gemini 3.1 Pro Preview (Thinking)" },
+        { modelName: "grok-4.2", title: "Grok 4.2" },
+        { modelName: "deepseek-chat", title: "DeepSeek Chat" },
+        { modelName: "GLM-4.6", title: "GLM 4.6" },
+        { modelName: "GLM-4.7", title: "GLM 4.7" },
+        { modelName: "kimi-latest", title: "Kimi Latest" },
+        { modelName: "kimi-k2-0905-preview", title: "Kimi K2 (0905 Preview)" }
+    ];
+
     // 读取模型列表
     public readModels(): any[] | null {
+        // Aurod 供应商返回默认模型列表
+        if (this.supplierName === 'aurod') {
+            return ModelService.AUROD_DEFAULT_MODELS.map(m => ({
+                title: m.title,
+                supplierName: this.supplierName,
+                modelName: m.modelName,
+                capability: ["llm"],
+                status: true
+            }));
+        }
+        
         if (!pub.file_exists(this.modelsFile)) {
             return null;
         }
@@ -180,6 +209,11 @@ export class ModelService {
 
     // 获取线上模型列表
     public async getOnlineModels(): Promise<any[] | null> {
+        // Aurod 供应商返回默认模型列表
+        if (this.supplierName === 'aurod') {
+            return this.readModels();
+        }
+        
         if (!this.connect()) {
             return null;
         }

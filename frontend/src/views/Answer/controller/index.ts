@@ -57,7 +57,12 @@ export async function copyContent(text: string) {
 /**
  * @description 根据模型确定对应的图标
  */
-export const answerLogo = (model: string) => {
+export const answerLogo = (model: string, supplierName?: string) => {
+    // Aurod 供应商使用默认图标
+    if (supplierName === 'aurod') {
+        return AingDesk
+    }
+    
     let logo = null
     Object.keys(logos).forEach(item => {
         {

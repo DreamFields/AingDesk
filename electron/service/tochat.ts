@@ -221,10 +221,11 @@ const formatDate = (timestamp: number) => {
 }
 
 // 提取获取响应信息的函数
-const getResponseInfo = (chunk: any, isOllama: boolean, modelStr: string, resTimeMs: number) => {
+const getResponseInfo = (chunk: any, isOllama: boolean, modelStr: string, resTimeMs: number, supplierName?: string) => {
     if (isOllama) {
         return {
             model: chunk.model,
+            supplierName: supplierName || '',
             created_at: chunk.created_at.toString(),
             total_duration: chunk.total_duration / 1000000000,
             load_duration: chunk.load_duration / 1000000,
@@ -237,6 +238,7 @@ const getResponseInfo = (chunk: any, isOllama: boolean, modelStr: string, resTim
         const nowTime = pub.time();
         return {
             model: modelStr,
+            supplierName: supplierName || '',
             created_at: formatDate(chunk.created),
             total_duration: nowTime - chunk.created,
             load_duration: 0,
@@ -420,6 +422,7 @@ export class ToChatService {
             reasoning: "",
             stat: {
                 model: modelStr,
+                supplierName: supplierName || '',
                 created_at: '',
                 total_duration: 0,
                 load_duration: 0,
@@ -536,7 +539,7 @@ export class ToChatService {
             }
             if ((isOllama && chunk.done) ||
                 (!isOllama && (chunk.choices[0].finish_reason === 'stop' || chunk.choices[0].finish_reason === 'normal'))) {
-                const resInfo = getResponseInfo(chunk, isOllama, modelStr, resTimeMs);
+                const resInfo = getResponseInfo(chunk, isOllama, modelStr, resTimeMs, supplierName);
                 chatHistoryRes.created_at = chunk.created_at ? chunk.created_at.toString() : chunk.created;
                 chatHistoryRes.create_time = chunk.created ? chunk.created : pub.time();
                 chatHistoryRes.stat = resInfo;

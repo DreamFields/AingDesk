@@ -1,6 +1,6 @@
 <template>
     <div class="answer">
-        <NImage :src="answerLogo(answerContent.stat?(answerContent.stat as Stat)!.model as string:'')" width="30" height="30" preview-disabled />
+        <NImage :src="answerLogo(answerContent.stat?(answerContent.stat as Stat)!.model as string:'', answerContent.stat?(answerContent.stat as Stat)!.supplierName as string:'')" width="30" height="30" preview-disabled />
         <div class="answer-token flex items-center gap-5" v-if="!answerContent.content && isInChat">
             <NSpin :size="20" />{{ targetNet ? $t("正在搜索...") : $t("正在思考...") }}
         </div>

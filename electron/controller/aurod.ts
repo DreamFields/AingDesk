@@ -7,6 +7,24 @@ import path from 'path';
  */
 class AurodController {
     private provider: AurodProvider | null = null;
+    
+    // 默认模型列表
+    private static readonly DEFAULT_MODELS = [
+        { modelName: "gpt-5.4-nano", title: "GPT-5.4 Nano", capability: ["llm"], status: true },
+        { modelName: "gpt-5.4-nano-2026-03-17", title: "GPT-5.4 Nano (2026-03-17)", capability: ["llm"], status: true },
+        { modelName: "claude-sonnet-4-6", title: "Claude Sonnet 4.6", capability: ["llm"], status: true },
+        { modelName: "claude-sonnet-4-6-thinking", title: "Claude Sonnet 4.6 (Thinking)", capability: ["llm"], status: true },
+        { modelName: "claude-opus-4-6", title: "Claude Opus 4.6", capability: ["llm"], status: true },
+        { modelName: "gemini-3-flash-preview-thinking", title: "Gemini 3 Flash Preview (Thinking)", capability: ["llm"], status: true },
+        { modelName: "gemini-3.1-pro-preview", title: "Gemini 3.1 Pro Preview", capability: ["llm"], status: true },
+        { modelName: "gemini-3.1-pro-preview-thinking", title: "Gemini 3.1 Pro Preview (Thinking)", capability: ["llm"], status: true },
+        { modelName: "grok-4.2", title: "Grok 4.2", capability: ["llm"], status: true },
+        { modelName: "deepseek-chat", title: "DeepSeek Chat", capability: ["llm"], status: true },
+        { modelName: "GLM-4.6", title: "GLM 4.6", capability: ["llm"], status: true },
+        { modelName: "GLM-4.7", title: "GLM 4.7", capability: ["llm"], status: true },
+        { modelName: "kimi-latest", title: "Kimi Latest", capability: ["llm"], status: true },
+        { modelName: "kimi-k2-0905-preview", title: "Kimi K2 (0905 Preview)", capability: ["llm"], status: true }
+    ];
 
     constructor() {
     }
@@ -52,7 +70,7 @@ class AurodController {
     }
 
     /**
-     * 获取模型列表
+     * 获取模型列表 - 返回内置默认模型
      */
     public async get_models() {
         try {
@@ -61,21 +79,14 @@ class AurodController {
                 return { success: false, error: "请先登录 Aurod 平台" };
             }
             
-            const config = pub.read_json(configPath);
-            const provider = new AurodProvider(config.apiKey);
-            
-            const models = await provider.getModels();
-            
-            // 保存模型列表
-            const modelsFile = path.join(pub.get_data_path(), "models", "aurod", "models.json");
-            const modelsList = models.map((model: any) => ({
-                title: model.title || model.name || model.id,
-                supplierName: "aurod",
-                modelName: model.id || model.name,
-                capability: model.capability || ["llm"],
-                status: true
+            // 返回内置默认模型列表
+            const modelsList = AurodController.DEFAULT_MODELS.map(model => ({
+                ...model,
+                supplierName: "aurod"
             }));
             
+            // 保存到本地
+            const modelsFile = path.join(pub.get_data_path(), "models", "aurod", "models.json");
             pub.write_file(modelsFile, JSON.stringify(modelsList, null, 4));
             
             return { success: true, models: modelsList };

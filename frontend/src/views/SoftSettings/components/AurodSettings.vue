@@ -43,6 +43,7 @@
               @click="testConnection" 
               :loading="testing"
               size="large"
+              v-if="!isLoggedIn"
             >
               测试连接
             </n-button>
@@ -160,7 +161,8 @@ const checkLoginStatus = async () => {
       isLoggedIn.value = true;
       statusMsg.value = result.message;
       statusType.value = 'success';
-      await loadSavedModels();
+      // 自动加载模型列表
+      await fetchModels();
     }
   } catch (error) {
     isLoggedIn.value = false;
@@ -200,6 +202,8 @@ const handleLogin = async () => {
       isLoggedIn.value = true;
       message.success('登录成功');
       password.value = '';
+      // 登录成功后自动获取模型列表
+      await fetchModels();
     } else {
       statusMsg.value = result.error || '登录失败，请检查账号密码';
       statusType.value = 'error';
@@ -226,6 +230,8 @@ const testConnection = async () => {
       statusType.value = 'success';
       isLoggedIn.value = true;
       message.success('连接正常');
+      // 连接成功后自动获取模型列表
+      await fetchModels();
     } else {
       statusMsg.value = result.error || '连接失败';
       statusType.value = 'error';
