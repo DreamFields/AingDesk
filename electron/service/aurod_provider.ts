@@ -35,10 +35,16 @@ export class AurodProvider {
     private cookie: string = "";
     private uid: number = 0;
     private currentSessionId: number | null = null;
+    
+    // 静态变量保存会话 ID，确保同一进程内复用会话
+    private static savedSessionId: number | null = null;
 
     constructor(authToken?: string, cookie?: string) {
         this.authToken = authToken || "";
         this.cookie = cookie || "";
+        
+        // 恢复保存的会话 ID
+        this.currentSessionId = AurodProvider.savedSessionId;
         
         this.client = axios.create({
             baseURL: this.baseUrl,
@@ -52,6 +58,10 @@ export class AurodProvider {
         });
         
         this.updateHeaders();
+        
+        if (this.currentSessionId) {
+            logger.info(`[Aurod] Restored session ID: ${this.currentSessionId}`);
+        }
     }
 
     /**
@@ -124,6 +134,9 @@ export class AurodProvider {
             }
             
             this.currentSessionId = data.data.id;
+            // 保存到静态变量，确保新实例能恢复会话
+            AurodProvider.savedSessionId = this.currentSessionId;
+            logger.info(`[Aurod] Session created and saved: ${this.currentSessionId}`);
             
             return {
                 id: data.data.id,
@@ -198,10 +211,18 @@ export class AurodProvider {
      */
     public async *chat(messages: any[], model?: string): AsyncGenerator<any> {
         try {
+            // 优先从静态变量恢复会话 ID
+            if (!this.currentSessionId && AurodProvider.savedSessionId) {
+                this.currentSessionId = AurodProvider.savedSessionId;
+                logger.info(`[Aurod] Restored session from static: ${this.currentSessionId}`);
+            }
+            
             if (!this.currentSessionId) {
                 // 自动创建会话
                 logger.info('[Aurod] No active session, creating new session...');
                 await this.createSession(model || "gpt-5-chat");
+            } else {
+                logger.info(`[Aurod] Using existing session: ${this.currentSessionId}`);
             }
         } catch (sessionError: any) {
             logger.error('[Aurod] Failed to create session:', sessionError.message);
@@ -404,6 +425,29 @@ export class AurodProvider {
      */
     public setSession(sessionId: number): void {
         this.currentSessionId = sessionId;
+        AurodProvider.savedSessionId = sessionId;
+        logger.info(`[Aurod] Session set to: ${sessionId}`);
+    }
+    
+    /**
+     * 获取保存的会话 ID（静态方法）
+     */
+    public static getSavedSessionId(): number | null {
+        return AurodProvider.savedSessionId;
+    }
+    
+    /**
+     * 设置保存的会话 ID（静态方法）
+     */
+    public static setSavedSessionId(sessionId: number | null): void {
+        AurodProvider.savedSessionId = sessionId;
+    }
+    
+    /**
+     * 清除保存的会话
+     */
+    public static clearSession(): void {
+        AurodProvider.savedSessionId = null;
     }
 
     /**
