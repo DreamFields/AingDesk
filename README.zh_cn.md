@@ -66,6 +66,11 @@ docker compose up -d
 docker-compose up -d
 ```
 
+## 环境要求
+
+- **Node.js >= 18.0.0，推荐使用 Node.js 20.x LTS 版本**
+- Node.js 22+ 可能存在兼容性问题，建议使用 nvm 切换到 Node.js 20
+
 ## 编译
 ```bash
 git clone https://github.com/aingdesk/AingDesk.git

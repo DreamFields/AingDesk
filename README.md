@@ -78,6 +78,11 @@ docker compose up -d
 # or
 docker-compose up -d
 ``` 
+## Requirements
+
+- **Node.js >= 18.0.0, recommended Node.js 20.x LTS**
+- Node.js 22+ may have compatibility issues, use nvm to switch to Node.js 20
+
 ## Build
 ```bash
 git clone https://github.com/aingdesk/AingDesk.git
