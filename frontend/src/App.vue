@@ -23,7 +23,7 @@ import { getKnowledgeStoreData } from './views/KnowleadgeStore/store';
 import { getChatContentStoreData } from './views/ChatContent/store';
 
 
-const { themeMode, targetNet, fontScale } = getSoftSettingsStoreData()
+const { themeMode, targetNet, fontScale, chatFontScale } = getSoftSettingsStoreData()
 const { knowledgeDragable, } = getKnowledgeStoreData()
 const { welcomeShow, } = getIndexStore()
 const { guideActive, } = getChatContentStoreData()

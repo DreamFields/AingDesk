@@ -25,10 +25,24 @@ export function fontScaleChange(scale: number) {
   document.documentElement.style.setProperty('--bt-fz-large', `${Math.round(scaled + 2)}px`);
 }
 
+export function chatFontScaleChange(scale: number) {
+  const safeScale = Math.min(200, Math.max(85, Number(scale) || 100));
+  const baseFontSize = 14;
+  const scaled = (baseFontSize * safeScale) / 100;
+
+  document.documentElement.style.setProperty('--chat-fz', `${Math.round(scaled)}px`);
+  // 同步更新代码块字体大小（保持与markdown内容一致）
+  document.documentElement.style.setProperty('--code-fz', `${Math.round(scaled)}px`);
+}
+
 themeChange(storage.themeMode)
 fontScaleChange(storage.fontScale)
+chatFontScaleChange(storage.chatFontScale)
 
 eventBUS.$on("themeChange",themeChange)
 eventBUS.$on("fontScaleChange",fontScaleChange)
+eventBUS.$on("chatFontScaleChange",chatFontScaleChange)
+
+
 
 

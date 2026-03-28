@@ -171,6 +171,16 @@ export function changeFontScale(val: number) {
 }
 
 /**
+ * @description 设置对话字体缩放比例
+ */
+export function changeChatFontScale(val: number) {
+	const { chatFontScale } = getSoftSettingsStoreData();
+	chatFontScale.value = val;
+	Storage.chatFontScale = val;
+	eventBUS.$emit('chatFontScaleChange', val);
+}
+
+/**
  * @description 切换主题
  */
 export function changeThemeMode(val: string) {

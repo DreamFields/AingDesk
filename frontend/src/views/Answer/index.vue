@@ -47,6 +47,7 @@ defineProps<{ answerContent: AnswerInfo, questionContent: MultipeQuestionDto }>(
         border-radius: 5px;
         padding: 4px var(--bt-pd-normal) 20px 0;
         position: relative;
+        font-size: var(--chat-fz);
 
         .info-pop {
             gap: 10px;

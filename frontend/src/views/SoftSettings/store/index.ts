@@ -37,6 +37,8 @@ const useSoftSettingsStore = defineStore("softSettings", () => {
 	const version = ref('1.0.0');
 	// 界面字体缩放比例（百分比）
 	const fontScale = ref(storage.fontScale || 100);
+	// 对话字体缩放比例（百分比）
+	const chatFontScale = ref(storage.chatFontScale || 100);
 	// 修改数据存储位置的提示弹窗
 	const changeDataPathShow = ref(false);
 	// 获取用户数据存储位置
@@ -111,6 +113,7 @@ const useSoftSettingsStore = defineStore("softSettings", () => {
 		targetNet,
 		version,
 		fontScale,
+		chatFontScale,
 		userDataPath,
 		dataPathChangeCheckShow,
 		dataPathChangeStatusValues,

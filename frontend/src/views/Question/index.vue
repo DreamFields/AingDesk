@@ -109,6 +109,7 @@ async function copyQuestion(text: string) {
                 display: flex;
                 padding: 4px var(--bt-pd-small);
                 align-items: center;
+                font-size: var(--chat-fz);
             }
 
             .tools {

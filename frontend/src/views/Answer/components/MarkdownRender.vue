@@ -255,6 +255,7 @@ eventBUS.$on("answerRendered", doMermaidRender)
 
 .markdown-content {
     // font-size: 16px;
+    font-size: var(--chat-fz);
 
     p {
         margin-block-end: 1em;
@@ -321,6 +322,7 @@ eventBUS.$on("answerRendered", doMermaidRender)
                 background-color: transparent;
                 padding: 0;
                 white-space: pre-line;
+                font-size: var(--chat-fz);
             }
 
             img {
@@ -332,6 +334,7 @@ eventBUS.$on("answerRendered", doMermaidRender)
             width: 100%;
             box-sizing: border-box;
             overflow-x: auto;
+            font-size: var(--chat-fz);
 
         }
     }
@@ -340,6 +343,7 @@ eventBUS.$on("answerRendered", doMermaidRender)
         // background-color: #F9FAFB;
         background-color: transparent;
         padding: 3px;
+        font-size: var(--chat-fz);
     }
 
 

@@ -58,5 +58,18 @@ export default {
 
     set fontScale(scale: number) {
         localStorage.setItem("fontScale", String(scale))
+    },
+
+    // 对话字体缩放比例（百分比）
+    get chatFontScale(): number {
+        const scale = Number(localStorage.getItem("chatFontScale"))
+        if (Number.isNaN(scale) || scale <= 0) {
+            return 100
+        }
+        return scale
+    },
+
+    set chatFontScale(scale: number) {
+        localStorage.setItem("chatFontScale", String(scale))
     }
 }
