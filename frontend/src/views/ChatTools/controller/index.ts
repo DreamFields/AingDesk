@@ -436,3 +436,36 @@ export function chooseMcpServerForChat(mcpName: string) {
     }
 }
 
+
+/**
+ * @description 切换记忆功能
+ * 开启时会调用后端初始化记忆，关闭时禁用记忆
+ */
+export async function toggleMemory() {
+    const { memoryActive } = getChatToolsStoreData()
+    const { currentContextId } = getSiderStoreData()
+    memoryActive.value = !memoryActive.value
+
+    if (memoryActive.value && currentContextId.value) {
+        try {
+            await post("/memory/init_memory", {
+                context_id: currentContextId.value,
+                novel_name: ""
+            })
+            message.success($t("记忆已启用"))
+        } catch (error) {
+            sendLog(error as Error)
+        }
+    } else if (!memoryActive.value && currentContextId.value) {
+        try {
+            await post("/memory/set_memory_enabled", {
+                context_id: currentContextId.value,
+                enabled: false
+            })
+            message.info($t("记忆已关闭"))
+        } catch (error) {
+            sendLog(error as Error)
+        }
+    }
+}
+

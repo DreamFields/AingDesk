@@ -77,6 +77,19 @@
                         </template>
                         {{ $t("联网搜索") }}
                     </n-button>
+                    <!-- 创作记忆 -->
+                    <n-tooltip trigger="hover">
+                        <template #trigger>
+                            <n-button class="h-40" ghost :type="memoryActive ? 'primary' : 'default'" @click="toggleMemory"
+                                :focusable="false">
+                                <template #icon>
+                                    <i class="i-tdesign:lightbulb"></i>
+                                </template>
+                                {{ $t("记忆") }}
+                            </n-button>
+                        </template>
+                        {{ $t("启用后，AI 将自动记住对话中的角色、情节等信息，实现跨轮次记忆") }}
+                    </n-tooltip>
                     <n-button class="send-btn" type="primary" v-if="!isInChat" @click="sendChatToModel"
                         :disabled="questionContent.trim() ? false : true">{{ $t("发送") }}</n-button>
                     <n-button class="send-btn" type="error" v-else @click="stopGenerate">{{ $t("停止生成") }}</n-button>
@@ -108,7 +121,8 @@ import {
     acceptFileType,
     sendChartToModelForKeyBoard,
     useTempChat,
-    getMcpServerListForChat
+    getMcpServerListForChat,
+    toggleMemory
 } from "@/views/ChatTools/controller"
 
 import { computed, nextTick } from "vue";
@@ -120,7 +134,8 @@ const {
     temp_chat,
     netActive,
     questionFilesRef,
-    mcpListChoosed
+    mcpListChoosed,
+    memoryActive
 } = getChatToolsStoreData()
 
 const {

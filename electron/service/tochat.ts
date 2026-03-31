@@ -8,6 +8,8 @@ import { Rag } from '../rag/rag';
 import { Stream } from 'stream';
 import { MCPClient } from './mcp_client';
 import { ChatContext, ChatHistory, ChatService, ModelInfo } from './chat';
+import { memoryService } from './memory';
+import { memoryExtractService } from './memory_extract';
 
 /**
  * 存储所有模型信息的数组
@@ -460,6 +462,27 @@ export class ToChatService {
                 }
             }
         }
+
+        // === 记忆系统：注入记忆上下文 ===
+        try {
+            const memoryPrompt = memoryService.buildMemoryPrompt(uuid, user_content);
+            if (memoryPrompt) {
+                // 如果已有 system prompt，将记忆追加到其后面
+                if (history[0].role === 'system') {
+                    history[0].content += '\n\n' + memoryPrompt;
+                } else {
+                    // 没有 system prompt 时，创建一个新的
+                    history.unshift({
+                        role: 'system',
+                        content: memoryPrompt
+                    });
+                }
+                logger.info(`[Memory] 已注入记忆上下文到对话 ${uuid}`);
+            }
+        } catch (memError: any) {
+            logger.error('[Memory] 记忆注入失败:', memError.message);
+        }
+
         handleDocuments(letHistory, modelName, user_content);
         handleImages(letHistory, isVision);
         if (letHistory.tool_calls !== undefined) {
@@ -549,6 +572,23 @@ export class ToChatService {
                 }
                 s.push(null);
                 await this.set_chat_history(uuid, resUUID, chatHistoryRes);
+
+                // === 记忆系统：对话结束后异步提取记忆 ===
+                const memoryIndex = memoryService.getMemoryIndex(uuid);
+                if (memoryIndex && memoryIndex.memory_enabled) {
+                    setTimeout(async () => {
+                        try {
+                            const chatSvc = new ChatService();
+                            const fullHistory = chatSvc.read_history(uuid);
+                            await memoryExtractService.extractFromConversation(
+                                uuid, fullHistory, supplierName, modelStr
+                            );
+                        } catch (extractErr: any) {
+                            logger.error('[Memory] 后台记忆提取失败:', extractErr.message);
+                        }
+                    }, 2000);
+                }
+
                 return false;
             }
             if (isOllama) {

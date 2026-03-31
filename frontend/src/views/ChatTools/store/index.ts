@@ -33,6 +33,8 @@ const useChatToolsStore = defineStore("chatTools", () => {
     const mcpListChoosed = ref<string[]>([])
     // 多模型对话的唯一id
     const compare_id = ref<string>("")
+    // 是否启用记忆
+    const memoryActive = ref(false)
     return {
         chatMask,
         questionContent,
@@ -46,7 +48,8 @@ const useChatToolsStore = defineStore("chatTools", () => {
         netActive,
         mcpListForChat,
         mcpListChoosed,
-        compare_id
+        compare_id,
+        memoryActive
     }
 })
 
