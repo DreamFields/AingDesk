@@ -48,7 +48,7 @@ export class AurodProvider {
         
         this.client = axios.create({
             baseURL: this.baseUrl,
-            timeout: 30000,
+            timeout: 0,
             headers: {
                 "Content-Type": "application/json",
                 "X-App-Version": "2.14.0",

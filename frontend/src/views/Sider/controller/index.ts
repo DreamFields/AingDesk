@@ -63,13 +63,13 @@ export async function get_chat_list() {
 /**
  * @description 创建新对话：打开新对话窗口
  */
-export function createNewComu() {
+export async function createNewComu() {
     const { currentContextId, currentChatTitle, } = getSiderStoreData()
     const { chatHistory, } = getChatContentStoreData()
     const { chatForAgent, currentAgent } = getAgentStoreData()
     const { activeKnowledgeForChat, activeKnowledge, activeKnowledgeDto, } = getKnowledgeStoreData()
     const { netActive, } = getChatToolsStoreData()
-
+    const { currentSupplierName } = getThirdPartyApiStoreData()
 
     try {
         currentContextId.value = ""
@@ -82,6 +82,14 @@ export function createNewComu() {
         // 判断是否当前为智能体对话
         if (chatForAgent.value) {
             currentChatTitle.value = currentAgent.value!.agent_name
+        }
+        // 如果当前是 Aurod 供应商，清除 Aurod 会话
+        if (currentSupplierName.value === 'aurod') {
+            try {
+                await post('/aurod/clear_session')
+            } catch (error) {
+                console.error('清除 Aurod 会话失败:', error)
+            }
         }
         knowledgeIsClose()
     } catch (error) {
@@ -263,10 +271,10 @@ export function doChatOperateSelect(val: string, context_id: string) {
 /**
  * @description 新建对话
  */
-export function makeNewChat() {
+export async function makeNewChat() {
     const { currentChatAgent } = getAgentStoreData()
     currentChatAgent.value = null
-    createNewComu()
+    await createNewComu()
 }
 
 /**

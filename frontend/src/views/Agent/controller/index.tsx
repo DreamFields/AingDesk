@@ -61,14 +61,14 @@ export async function modifyAgent() {
 /***
  * @description 选择智能体进行对话
  */
-export function chooseAgentForChat(agent: AgentItemDto) {
+export async function chooseAgentForChat(agent: AgentItemDto) {
     const { currentAgent, chatForAgent, agentShow, currentChatAgent } = getAgentStoreData()
     currentChatAgent.value = agent
     currentAgent.value = agent
     chatForAgent.value = true
 
     // 打开对话
-    createNewComu()
+    await createNewComu()
     agentShow.value = false
 }
 

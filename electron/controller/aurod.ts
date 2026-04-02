@@ -190,6 +190,19 @@ class AurodController {
             return { success: false, error: error.message };
         }
     }
+
+    /**
+     * 清除当前会话（新建对话时调用）
+     */
+    public async clear_session() {
+        try {
+            // 清除 AurodProvider 的静态会话 ID
+            AurodProvider.clearSession();
+            return { success: true, message: "会话已清除" };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    }
 }
 
 export default new AurodController();
