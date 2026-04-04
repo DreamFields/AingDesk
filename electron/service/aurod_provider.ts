@@ -40,11 +40,20 @@ export class AurodProvider {
     private static savedSessionId: number | null = null;
 
     constructor(authToken?: string, cookie?: string) {
+        // ===== 调试日志：实例创建 =====
+        const callStack = new Error().stack?.split('\n').slice(1, 4).map(l => l.trim()).join(' | ') || 'unknown';
+        
         this.authToken = authToken || "";
         this.cookie = cookie || "";
         
         // 恢复保存的会话 ID
         this.currentSessionId = AurodProvider.savedSessionId;
+        
+        logger.info(`[Aurod-DEBUG] ========== NEW INSTANCE CREATED ==========`);
+        logger.info(`[Aurod-DEBUG] Constructor called from: ${callStack}`);
+        logger.info(`[Aurod-DEBUG] Static savedSessionId: ${AurodProvider.savedSessionId}`);
+        logger.info(`[Aurod-DEBUG] Instance currentSessionId after restore: ${this.currentSessionId}`);
+        logger.info(`[Aurod-DEBUG] authToken provided: ${authToken ? 'YES (' + authToken.substring(0, 20) + '...)' : 'NO'}`);
         
         this.client = axios.create({
             baseURL: this.baseUrl,
@@ -136,6 +145,9 @@ export class AurodProvider {
             this.currentSessionId = data.data.id;
             // 保存到静态变量，确保新实例能恢复会话
             AurodProvider.savedSessionId = this.currentSessionId;
+            logger.info(`[Aurod-DEBUG] ========== SESSION CREATED ==========`);
+            logger.info(`[Aurod-DEBUG] New sessionId: ${this.currentSessionId}`);
+            logger.info(`[Aurod-DEBUG] Static savedSessionId updated: ${AurodProvider.savedSessionId}`);
             logger.info(`[Aurod] Session created and saved: ${this.currentSessionId}`);
             
             return {
@@ -250,9 +262,70 @@ export class AurodProvider {
     }
 
     /**
+     * 将完整的 messages 数组格式化为文本
+     * Aurod API 只接受 text 字段，需要将历史对话拼接进去
+     */
+    private formatMessagesToText(messages: any[]): string {
+        if (messages.length === 0) return '';
+
+        const parts: string[] = [];
+
+        for (let i = 0; i < messages.length; i++) {
+            const msg = messages[i];
+            let content = '';
+
+            // 处理 content 为数组的情况（如带图片的 multi-modal 消息）
+            if (Array.isArray(msg.content)) {
+                const textParts = msg.content.filter((p: any) => p.type === 'text').map((p: any) => p.text);
+                content = textParts.join('\n');
+            } else if (typeof msg.content === 'string') {
+                content = msg.content;
+            }
+
+            if (!content) continue;
+
+            // 跳过纯 system 消息中的记忆注入等，但保留有意义的 system prompt
+            if (msg.role === 'system' && i === 0) {
+                parts.push(`[系统指令]\n${content}`);
+            } else if (msg.role === 'user') {
+                // 最后一条用户消息是当前输入，特殊标记
+                if (i === messages.length - 1) {
+                    parts.push(`[当前用户输入]`);
+                    parts.push(content);
+                } else {
+                    parts.push(`[用户]\n${content}`);
+                }
+            } else if (msg.role === 'assistant') {
+                parts.push(`[助手回复]\n${content}`);
+            }
+        }
+
+        return parts.join('\n\n');
+    }
+
+    /**
      * 流式聊天 - 转换为 OpenAI 兼容格式
+     * 将完整历史消息格式化为文本发送给 Aurod API
      */
     public async *chat(messages: any[], model?: string): AsyncGenerator<any> {
+        // ===== 调试日志：chat 方法入口 =====
+        const callStack = new Error().stack?.split('\n').slice(1, 4).map(l => l.trim()).join(' | ') || 'unknown';
+        
+        logger.info(`[Aurod-DEBUG] ========== CHAT CALLED ==========`);
+        logger.info(`[Aurod-DEBUG] Called from: ${callStack}`);
+        logger.info(`[Aurod-DEBUG] messages count: ${messages.length}`);
+        if (messages.length > 0) {
+            const lastMsg = messages[messages.length - 1];
+            const preview = (lastMsg?.content || '').substring(0, 80);
+            logger.info(`[Aurod-DEBUG] Last message role: ${lastMsg?.role}, content: "${preview}..."`);
+            // 显示完整消息角色列表
+            const roles = messages.map((m, i) => `[${i}]${m.role}:${((m?.content || '').length)}chars`).join(' -> ');
+            logger.info(`[Aurod-DEBUG] Messages chain: ${roles}`);
+        }
+        logger.info(`[Aurod-DEBUG] Instance currentSessionId: ${this.currentSessionId}`);
+        logger.info(`[Aurod-DEBUG] Static savedSessionId: ${AurodProvider.savedSessionId}`);
+        logger.info(`[Aurod-DEBUG] Model: ${model || 'default'}`);
+        
         try {
             // 优先从静态变量恢复会话 ID
             if (!this.currentSessionId && AurodProvider.savedSessionId) {
@@ -276,14 +349,16 @@ export class AurodProvider {
             throw new Error('无法创建会话，请检查配置');
         }
 
+        // 将完整的对话历史格式化为文本
+        const formattedText = this.formatMessagesToText(messages);
         const payload = {
-            text: messages[messages.length - 1].content,
+            text: formattedText,
             sessionId: this.currentSessionId,
             files: [],
             model: model
         };
 
-        logger.info(`[Aurod] Sending chat request, sessionId: ${this.currentSessionId}, model: ${model || 'default'}, text length: ${payload.text.length}`);
+        logger.info(`[Aurod] Sending chat request, sessionId: ${this.currentSessionId}, model: ${model || 'default'}, total text length: ${formattedText.length}, messages count: ${messages.length}`);
 
         try {
             const response = await this.client.post("/api/chat/completions", payload, {
@@ -467,8 +542,12 @@ export class AurodProvider {
      * 设置当前会话
      */
     public setSession(sessionId: number): void {
+        logger.info(`[Aurod-DEBUG] ========== SET SESSION CALLED ==========`);
+        logger.info(`[Aurod-DEBUG] sessionId param: ${sessionId}`);
+        logger.info(`[Aurod-DEBUG] savedSessionId BEFORE: ${AurodProvider.savedSessionId}`);
         this.currentSessionId = sessionId;
         AurodProvider.savedSessionId = sessionId;
+        logger.info(`[Aurod-DEBUG] currentSessionId: ${this.currentSessionId}, static savedSessionId: ${AurodProvider.savedSessionId}`);
         logger.info(`[Aurod] Session set to: ${sessionId}`);
     }
     
@@ -490,7 +569,12 @@ export class AurodProvider {
      * 清除保存的会话
      */
     public static clearSession(): void {
+        const callStack = new Error().stack?.split('\n').slice(1, 4).map(l => l.trim()).join(' | ') || 'unknown';
+        logger.info(`[Aurod-DEBUG] ========== SESSION CLEARED ==========`);
+        logger.info(`[Aurod-DEBUG] Called from: ${callStack}`);
+        logger.info(`[Aurod-DEBUG] savedSessionId BEFORE: ${AurodProvider.savedSessionId}`);
         AurodProvider.savedSessionId = null;
+        logger.info(`[Aurod-DEBUG] savedSessionId AFTER: ${AurodProvider.savedSessionId}`);
     }
 
     /**

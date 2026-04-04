@@ -663,9 +663,14 @@ export class ToChatService {
                 } catch (error: any) {
                     return pub.lang('调用模型接口时出错了: {}', error.message);
                 }
-            } else {
-                const modelService = new ModelService(supplierName);
-                try {
+        } else {
+            logger.info(`[ToChat-DEBUG] ========== CHAT REQUEST START (Non-Ollama) ==========`);
+            logger.info(`[ToChat-DEBUG] supplierName: ${supplierName}, model: ${modelStr}`);
+            logger.info(`[ToChat-DEBUG] history messages count: ${history.length}`);
+            
+            const modelService = new ModelService(supplierName);
+            logger.info(`[ToChat-DEBUG] ModelService created, calling chat()...`);
+            try {
                     res = await modelService.chat(requestOption);
                 } catch (error: any) {
                     if (error.error && error.error.message) {

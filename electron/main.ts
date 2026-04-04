@@ -4,6 +4,16 @@ import { preload } from './preload';
 import { totalService } from './service/total';
 import mcp from './controller/mcp';
 
+// Fix: Windows 控制台默认使用 GBK 编码，导致打印中文乱码
+// 设置控制台编码为 UTF-8 (code page 65001)
+if (process.platform === 'win32') {
+    try {
+        require('child_process').execSync('chcp 65001 > nul', { stdio: 'ignore' });
+    } catch (e) {
+        // 忽略错误，不影响主流程
+    }
+}
+
 
 // New app
 const app = new ElectronEgg();

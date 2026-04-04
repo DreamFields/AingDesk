@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import path from 'path';
 import { pub } from '../class/public';
+import { logger } from 'ee-core/log';
 import { AurodProvider } from './aurod_provider';
 
 // 定义模型信息类型
@@ -44,10 +45,13 @@ export class ModelService {
         if(this.supplierName === 'ollama') {
             this.baseUrl = `${pub.get_ollama_host()}/v1`;
             this.apiKey = supplierName;
-        }else if(this.supplierName === 'aurod') {
+        }else         if(this.supplierName === 'aurod') {
             this.readApiConfig();
             if(this.apiConfig.apiKey) {
+                logger.info(`[Model-DEBUG] Creating AurodProvider in constructor (supplier: aurod)`);
+                logger.info(`[Model-DEBUG] Current static savedSessionId before new instance: ${AurodProvider.getSavedSessionId()}`);
                 this.aurodProvider = new AurodProvider(this.apiConfig.apiKey);
+                logger.info(`[Model-DEBUG] AurodProvider created, currentSessionId: ${this.aurodProvider.getCurrentSessionId()}`);
             }
         }else{
             this.readApiConfig();
@@ -69,7 +73,11 @@ export class ModelService {
                 this.error = "Aurod 未初始化，请先登录";
                 throw new Error('Aurod provider not initialized');
             }
-            return this.aurodProvider.chat(options.messages, options.model);
+            logger.info(`[Model-DEBUG] chat() called for Aurod, messages count: ${options.messages?.length}`);
+            logger.info(`[Model-DEBUG] AurodProvider sessionId before call: ${this.aurodProvider.getCurrentSessionId()}`);
+            const result = this.aurodProvider.chat(options.messages, options.model);
+            logger.info(`[Model-DEBUG] AurodProvider.chat() generator returned`);
+            return result;
         }
         
         if (!this.connect()) {
@@ -279,6 +287,7 @@ export class ModelService {
         // Aurod 供应商使用自定义连接方式
         if (this.supplierName === 'aurod') {
             if (this.aurodProvider) {
+                logger.info(`[Model-DEBUG] connect() - AurodProvider already exists, sessionId: ${this.aurodProvider.getCurrentSessionId()}`);
                 return true;
             }
             if (!this.apiKey) {
@@ -288,7 +297,9 @@ export class ModelService {
                 this.error = "Aurod API Token 未配置，请先登录";
                 return false;
             }
+            logger.info(`[Model-DEBUG] connect() - Creating new AurodProvider, static savedSessionId: ${AurodProvider.getSavedSessionId()}`);
             this.aurodProvider = new AurodProvider(this.apiKey);
+            logger.info(`[Model-DEBUG] connect() - New AurodProvider created, currentSessionId: ${this.aurodProvider.getCurrentSessionId()}`);
             return true;
         }
         
