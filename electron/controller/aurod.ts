@@ -256,6 +256,29 @@ class AurodController {
     }
 
     /**
+     * 获取已同步的 Aurod 模型列表（从 AurodModels.json 读取）
+     */
+    public async get_synced_models() {
+        try {
+            const modelsFilePath = path.join(pub.get_data_path(), "models", "aurod", "AurodModels.json");
+
+            if (!pub.file_exists(modelsFilePath)) {
+                return { success: true, models: [], message: "暂无已同步的模型，请先点击'同步最新'" };
+            }
+
+            const data = pub.read_json(modelsFilePath);
+            return {
+                success: true,
+                models: data.models || [],
+                syncTime: data.syncTime || "",
+                defaultModel: data.defaultModel || ""
+            };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
      * 根据 attr 属性判断模型能力（静态方法）
      */
     private static getCapability(attr: any): string[] {
