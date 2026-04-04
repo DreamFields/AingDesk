@@ -14,6 +14,7 @@ type ModelInfo = {
     total?: number;
     capability?: string[];
     contextLength: number;
+    integral?: string;
 };
 
 // 定义 API 配置类型
@@ -449,6 +450,7 @@ async function readSupplierModels(fileName: string, contextLengthFunc: (model: s
                     size: 0,
                     contextLength: contextLengthFunc(model.modelName),
                     capability: getCapability(model.modelName, model.capability || []),
+                    integral: (model as any).integral || '',
                 };
                 newModels.push(modelInfo);
             }

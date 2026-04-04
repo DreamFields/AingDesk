@@ -24,6 +24,7 @@ type ModelInfo = {
     modelName: string;
     capability: any;
     status?: boolean;
+    integral?: string;
 };
 
 /**
@@ -284,7 +285,7 @@ class ModelController {
      * @param args.capability - 模型能力
      * @returns
      */
-    async add_models(args: { title: string, supplierName: string, modelName: string, capability: string }): Promise<Result> {
+    async add_models(args: { title: string, supplierName: string, modelName: string, capability: string, integral?: string }): Promise<Result> {
 
 
         try {
@@ -294,7 +295,8 @@ class ModelController {
                 modelName: args.modelName,
                 supplierName: args.supplierName,
                 capability: JSON.parse(args.capability),
-                status: true
+                status: true,
+                integral: args.integral || ''
             };
 
             

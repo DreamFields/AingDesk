@@ -18,7 +18,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <n-tag v-if="item.supplierName === 'aurod'" type="info" size="small">
-                            {{ formatModelCost(item.model) }}
+                            {{ formatModelCost(item) }}
                         </n-tag>
                         <i class="i-tdesign:check-circle w-16 h-16 text-[var(--bt-theme-color)]"
                             v-if="item.title == showModel_test"></i>
@@ -44,7 +44,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <n-tag v-if="item.supplierName === 'aurod'" type="info" size="small">
-                        {{ formatModelCost(item.model) }}
+                        {{ formatModelCost(item) }}
                     </n-tag>
                     <i class="i-tdesign:check-circle w-16 h-16 text-[var(--bt-theme-color)]"
                         v-if="item.title == showModel_test"></i>
@@ -67,7 +67,7 @@ const { modelListSource,  } = getHeaderStoreData()
 // 定义选择事件
 const emits = defineEmits(['chooseModel'])
 
-// 模型积分消耗配置
+// 模型积分消耗配置（硬编码兜底，优先使用模型数据自带的 integral）
 const MODEL_COST_CONFIG: Record<string, number> = {
     'claude-sonnet-4-6-thinking': 100000,
     'claude-sonnet-4-6': 100000,
@@ -77,10 +77,25 @@ const MODEL_COST_CONFIG: Record<string, number> = {
 }
 
 /**
+ * @description 从模型项解析积分数值
+ * - 优先使用模型数据自带的 integral 字段（如 "10积分" → 10）
+ * - fallback 到硬编码的 MODEL_COST_CONFIG
+ */
+function getModelCost(item: any): number {
+    // 1. 尝试从模型的 integral 字段解析
+    if (item.integral) {
+        const match = String(item.integral).match(/(\d+)/)
+        if (match) return parseInt(match[1], 10)
+    }
+    // 2. 兜底：硬编码表（用 model 字段匹配）
+    return MODEL_COST_CONFIG[item.model] || 1
+}
+
+/**
  * @description 格式化模型积分消耗
  */
-function formatModelCost(model: string): string {
-    const cost = MODEL_COST_CONFIG[model] || 1
+function formatModelCost(item: any): string {
+    const cost = getModelCost(item)
     if (cost >= 10000) {
         const wan = Math.floor(cost / 10000)
         const remainder = cost % 10000

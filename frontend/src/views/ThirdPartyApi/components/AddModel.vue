@@ -88,6 +88,10 @@ interface AurodSyncedModel {
     icon?: string;
 }
 
+// 当前选中模型的积分（随表单一起提交）
+// 注意：integral 通过 (addModelFormData as any).integral 携带，无需单独的 ref
+
+
 const { t: $t } = useI18n()
 const {
     addSupplierModel,
@@ -164,7 +168,7 @@ const filteredAurodModelOptions = computed(() => {
     list.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
 
     return list.map(m => ({
-        label: m.title + (m.tag ? ` [${m.tag}]` : '') + (m.integral ? `  ${m.integral}` : ''),
+        label: m.title + (m.integral ? `  ${m.integral}` : ''),
         value: m.modelName
     }))
 })
@@ -194,6 +198,7 @@ const onAurodModelSelect = (value: string | null) => {
         addModelFormData.value.modelName = model.modelName
         addModelFormData.value.title = model.title
         addModelFormData.value.capability = [...(model.capability || [])]
+        ;(addModelFormData.value as any).integral = model.integral || ''
     }
 }
 
