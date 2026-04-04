@@ -262,6 +262,50 @@ export class AurodProvider {
     }
 
     /**
+     * 获取模板模型列表（/api/chat/tmpl）
+     * 返回包含完整属性信息的模型数据
+     */
+    public async getTemplateModels(): Promise<{
+        models: any[];
+        default_model: string;
+        default_chat: string;
+        think_model: string;
+        max_file_count: number;
+        max_file_size: number;
+    }> {
+        try {
+            const response = await this.client.get("/api/chat/tmpl", { timeout: 10000 });
+            const data: AurodResponse = response.data;
+
+            if (data.code !== 0) {
+                throw new Error(data.msg || "获取模型列表失败");
+            }
+
+            const result = data.data || {};
+            const modelsData = result.models || [];
+
+            // 格式化模型列表
+            const models = modelsData.map((model: any) => ({
+                label: model.label || "",
+                value: model.value || "",
+                attr: model.attr || {}
+            }));
+
+            return {
+                models,
+                default_model: result.defModel || "",
+                default_chat: result.defaultChat || "",
+                think_model: result.thinkModel || "",
+                max_file_count: result.mFileCount || 5,
+                max_file_size: result.mFileSize || 5
+            };
+        } catch (error: any) {
+            logger.error("Aurod get template models error:", error.message);
+            throw error;
+        }
+    }
+
+    /**
      * 将完整的 messages 数组格式化为文本
      * Aurod API 只接受 text 字段，需要将历史对话拼接进去
      */

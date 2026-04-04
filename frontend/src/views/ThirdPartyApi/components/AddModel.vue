@@ -13,6 +13,13 @@
                 <n-select :options="capabilityOptions" multiple v-model:value="addModelFormData.capability"
                     :on-update:value="capabilityChange" />
             </n-form-item>
+
+            <!-- Aurod AI 专属：同步最新模型按钮 -->
+            <n-form-item v-if="isAurodSupplier" label="快速操作">
+                <n-button type="primary" size="small" :loading="syncingModels" @click="syncLatestModels">
+                    同步最新模型
+                </n-button>
+            </n-form-item>
         </n-form>
         <template #footer>
             <div class="action-wrapper">
@@ -27,12 +34,15 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { getThirdPartyApiStoreData } from '../store'
+import { computed, ref } from 'vue';
 import {
     capabilityChange,
     confirmAddModel,
     modelIdChange,
     closeAddModel,
 } from "../controller"
+import { post } from '@/api';
+import { message } from '@/utils/naive-tools';
 const { t: $t } = useI18n()
 const {
     addSupplierModel,
@@ -40,8 +50,36 @@ const {
     addModelRules,
     isEditModelFormData,
     capabilityOptions,
-    addModelForm
+    addModelForm,
+    currentChooseApi
 } = getThirdPartyApiStoreData()
+
+// 是否为 Aurod 供应商
+const isAurodSupplier = computed(() => {
+    return currentChooseApi.value?.supplierName === 'aurod'
+})
+
+// 同步模型加载状态
+const syncingModels = ref(false)
+
+/**
+ * 同步 Aurod 最新模型列表
+ */
+const syncLatestModels = async () => {
+    syncingModels.value = true
+    try {
+        const result = await post('/aurod/sync_models')
+        if (result.success) {
+            message.success(`成功同步 ${result.count || 0} 个最新模型`)
+        } else {
+            message.error(result.error || '同步失败')
+        }
+    } catch (error: any) {
+        message.error(error.message || '同步请求失败')
+    } finally {
+        syncingModels.value = false
+    }
+}
 </script>
 
 <style scoped lang="scss">

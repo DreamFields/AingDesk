@@ -203,6 +203,79 @@ class AurodController {
             return { success: false, error: error.message };
         }
     }
+
+    /**
+     * 同步最新模型列表并保存到 AurodModels.json
+     */
+    public async sync_models() {
+        try {
+            const configPath = path.join(pub.get_data_path(), "models", "aurod", "config.json");
+            if (!pub.file_exists(configPath)) {
+                return { success: false, error: "请先登录 Aurod 平台" };
+            }
+
+            const config = pub.read_json(configPath);
+            const provider = new AurodProvider(config.apiKey);
+
+            // 调用 /api/chat/tmpl 获取模型列表
+            const response = await provider.getTemplateModels();
+
+            // 解析并转换为 AingDesk 可用的格式
+            const models = response.models.map((model: any) => ({
+                modelName: model.value,
+                title: model.label || model.value,
+                supplierName: "aurod",
+                capability: AurodController.getCapability(model.attr),
+                status: true,
+                tag: model.attr?.tag || "",
+                integral: model.attr?.integral || "",
+                icon: model.attr?.icon || ""
+            }));
+
+            // 保存到 AurodModels.json 文件
+            const modelsFilePath = path.join(pub.get_data_path(), "models", "aurod", "AurodModels.json");
+            pub.write_file(modelsFilePath, JSON.stringify({
+                syncTime: new Date().toISOString(),
+                defaultModel: response.default_model || "",
+                defaultChat: response.default_chat || "",
+                thinkModel: response.think_model || "",
+                maxFileCount: response.max_file_count || 5,
+                maxFileSize: response.max_file_size || 5,
+                models: models
+            }, null, 4));
+
+            return { 
+                success: true, 
+                count: models.length, 
+                models: models,
+                message: `成功同步 ${models.length} 个模型`
+            };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
+     * 根据 attr 属性判断模型能力（静态方法）
+     */
+    private static getCapability(attr: any): string[] {
+        const capabilities: string[] = [];
+        
+        // 所有模型默认都有 llm 能力
+        capabilities.push("llm");
+        
+        // 多模态（支持图片）
+        if (attr?.multimodal) {
+            capabilities.push("vision");
+        }
+        
+        // 插件能力
+        if (attr?.plugin) {
+            capabilities.push("tools");
+        }
+        
+        return capabilities;
+    }
 }
 
 export default new AurodController();
