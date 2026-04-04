@@ -67,6 +67,7 @@
 import { useI18n } from 'vue-i18n';
 import { getThirdPartyApiStoreData } from '../store'
 import { computed, ref, watch } from 'vue';
+import { useHeaderStore } from '@/views/Header/store';
 import {
     capabilityChange,
     confirmAddModel,
@@ -119,6 +120,18 @@ const syncLatestModels = async () => {
             message.success(`成功同步 ${result.count || 0} 个最新模型`)
             // 同步后刷新下拉列表
             await loadSyncedModels()
+            // 更新全局 Aurod 模型积分映射表（以服务器同步结果为准）
+            if (result.models) {
+                const headerStore = useHeaderStore()
+                const costMap: Record<string, number> = {}
+                for (const m of result.models) {
+                    if (m.modelName && m.integral) {
+                        const match = String(m.integral).match(/(\d+)/)
+                        if (match) costMap[m.modelName] = parseInt(match[1], 10)
+                    }
+                }
+                headerStore.aurodModelCostMap = costMap
+            }
         } else {
             message.error(result.error || '同步失败')
         }

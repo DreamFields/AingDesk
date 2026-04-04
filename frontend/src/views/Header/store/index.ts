@@ -74,6 +74,11 @@ const useHeaderStore = defineStore("headerStore", () => {
   const aurodCredits = ref<number | null>(null)
   // Aurod 积分详情
   const aurodCreditPlans = ref<any[]>([])
+  /**
+   * Aurod 同步模型积分映射表（modelName → 积分数值）
+   * 用户点击"同步最新模型"后自动更新，优先级高于硬编码 MODEL_COST_CONFIG
+   */
+  const aurodModelCostMap = ref<Record<string, number>>({})
   return {
     modelList,
     currentModelDto,
@@ -101,10 +106,13 @@ const useHeaderStore = defineStore("headerStore", () => {
     modelListShow,
     multipleModelList,
     aurodCredits,
-    aurodCreditPlans
+    aurodCreditPlans,
+    aurodModelCostMap
   }
 })
 
 export function getHeaderStoreData() {
   return storeToRefs(useHeaderStore())
 }
+
+export { useHeaderStore }

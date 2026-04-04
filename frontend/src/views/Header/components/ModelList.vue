@@ -58,11 +58,12 @@
 
 <script setup lang="ts">
 // import { changeCurrentModel } from "@/views/Header/controller"
-import { getHeaderStoreData } from '../store';
+import { getHeaderStoreData, useHeaderStore } from '../store';
 import { useI18n } from "vue-i18n";
 
 const { t: $t } = useI18n()
-const { modelListSource,  } = getHeaderStoreData()
+const headerStore = useHeaderStore()
+const { modelListSource } = getHeaderStoreData()
 
 // 定义选择事件
 const emits = defineEmits(['chooseModel'])
@@ -77,17 +78,22 @@ const MODEL_COST_CONFIG: Record<string, number> = {
 }
 
 /**
- * @description 从模型项解析积分数值
- * - 优先使用模型数据自带的 integral 字段（如 "10积分" → 10）
- * - fallback 到硬编码的 MODEL_COST_CONFIG
+ * @description 从模型项解析积分数值，三级查找：
+ *   1. 模型自身携带的 integral 字段（models.json 中存储）
+ *   2. Aurod 同步积分映射表 aurodModelCostMap（同步最新后以服务器为准）
+ *   3. 硬编码 MODEL_COST_CONFIG 兜底
  */
 function getModelCost(item: any): number {
-    // 1. 尝试从模型的 integral 字段解析
+    // 1. models.json 自带 integral
     if (item.integral) {
         const match = String(item.integral).match(/(\d+)/)
         if (match) return parseInt(match[1], 10)
     }
-    // 2. 兜底：硬编码表（用 model 字段匹配）
+    // 2. Aurod 同步结果（服务器为准，覆盖硬编码）
+    if (headerStore.aurodModelCostMap[item.model]) {
+        return headerStore.aurodModelCostMap[item.model]
+    }
+    // 3. 硬编码兜底
     return MODEL_COST_CONFIG[item.model] || 1
 }
 
